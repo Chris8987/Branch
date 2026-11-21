@@ -1,0 +1,118 @@
+{
+  "entities": {
+    "BranchBoard": {
+      "title": "BranchBoard",
+      "description": "An independent Branch project storing the standard hierarchical JSON tree and persistent view state.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "schemaVersion": {
+          "type": "integer",
+          "description": "Schema version for cross-platform Android and iPad PWA compatibility."
+        },
+        "title": {
+          "type": "string",
+          "description": "Project display title."
+        },
+        "activeMode": {
+          "type": "string",
+          "enum": ["DRAFT", "EXECUTION"],
+          "description": "Current working mode."
+        },
+        "activeView": {
+          "type": "string",
+          "enum": ["MIND_MAP", "TRUNK"],
+          "description": "Current canvas view."
+        },
+        "trunkRevealLevel": {
+          "type": "integer",
+          "description": "Persisted staircase reveal depth in Trunk View."
+        },
+        "root": {
+          "type": "object",
+          "description": "Standard hierarchical JSON root node containing id, parentId, title, notes, resultLog, color, orderIndex, status, isCollapsed, isPinned, isStrikethrough, variants, activeVariantId, and recursive children array."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when project was created (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of latest modification (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "schemaVersion",
+        "title",
+        "activeMode",
+        "activeView",
+        "trunkRevealLevel",
+        "root",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "VariantSnapshot": {
+      "title": "VariantSnapshot",
+      "description": "Deep-cloned subtree snapshot stored for a node's State Variant so switching states swaps the node's children cleanly.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "ownerNodeId": {
+          "type": "string",
+          "description": "ID of the BranchNode that owns this state."
+        },
+        "variantId": {
+          "type": "string",
+          "description": "ID of the State."
+        },
+        "label": {
+          "type": "string",
+          "description": "Display label of the state (e.g., 狀態 A, 狀態 B)."
+        },
+        "children": {
+          "type": "array",
+          "description": "Standard hierarchical JSON array of child BranchNode objects for this state."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when snapshot was created (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when snapshot was updated (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "ownerNodeId",
+        "variantId",
+        "label",
+        "children",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/boards/{boardId}": {
+      "schema": { "$ref": "#/entities/BranchBoard" },
+      "description": "User-scoped multi-project Branch boards holding standard hierarchical JSON trees."
+    },
+    "/users/{userId}/boards/{boardId}/snapshots/{snapshotId}": {
+      "schema": { "$ref": "#/entities/VariantSnapshot" },
+      "description": "User-scoped subtree snapshots for node States belonging to a project."
+    }
+  }
+}

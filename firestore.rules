@@ -1,0 +1,151 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Primitive Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validation Blueprints ---
+    function isValidRootNode(root) {
+      return root is map &&
+        root.keys().hasAll([
+          'id', 'title', 'notes', 'color', 'orderIndex',
+          'status', 'isCollapsed', 'isPinned', 'variants', 'children'
+        ]) &&
+        root.keys().hasOnly([
+          'id', 'parentId', 'title', 'notes', 'resultLog', 'color', 'orderIndex',
+          'status', 'isCollapsed', 'isPinned', 'isStrikethrough',
+          'variants', 'activeVariantId', 'children'
+        ]) &&
+        isValidId(root.id) &&
+        (!('parentId' in root) || root.parentId == null || isValidId(root.parentId)) &&
+        root.title is string && root.title.size() <= 200 &&
+        root.notes is string && root.notes.size() <= 10000 &&
+        (!('resultLog' in root) || (root.resultLog is string && root.resultLog.size() <= 500)) &&
+        root.color is string && root.color.size() >= 4 && root.color.size() <= 16 &&
+        root.orderIndex is int && root.orderIndex >= 0 && root.orderIndex <= 10000 &&
+        root.status in ['PLAN', 'DO', 'DONE'] &&
+        root.isCollapsed is bool &&
+        root.isPinned is bool &&
+        (!('isStrikethrough' in root) || root.isStrikethrough is bool) &&
+        root.variants is list && root.variants.size() <= 32 &&
+        (root.variants.size() == 0 || root.variants[0] is map) &&
+        (!('activeVariantId' in root) || root.activeVariantId == null || isValidId(root.activeVariantId)) &&
+        root.children is list && root.children.size() <= 500 &&
+        (root.children.size() == 0 || root.children[0] is map);
+    }
+
+    function isValidBranchBoard(data, userId) {
+      return data.userId is string &&
+        data.userId == userId &&
+        data.schemaVersion is int && data.schemaVersion >= 1 && data.schemaVersion <= 100 &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+        data.activeMode in ['DRAFT', 'EXECUTION'] &&
+        data.activeView in ['MIND_MAP', 'TRUNK'] &&
+        data.trunkRevealLevel is int && data.trunkRevealLevel >= 0 && data.trunkRevealLevel <= 50 &&
+        isValidRootNode(data.root) &&
+        data.createdAt is timestamp && data.createdAt <= request.time &&
+        data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidVariantSnapshot(data, userId) {
+      return data.userId is string &&
+        data.userId == userId &&
+        isValidId(data.ownerNodeId) &&
+        isValidId(data.variantId) &&
+        data.label is string && data.label.size() >= 1 && data.label.size() <= 60 &&
+        data.children is list && data.children.size() <= 500 &&
+        (data.children.size() == 0 || data.children[0] is map) &&
+        data.createdAt is timestamp && data.createdAt <= request.time &&
+        data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    // --- User-Scoped Multi-Project Boards ---
+    match /users/{userId}/boards/{boardId} {
+      allow get: if isOwner(userId) && isValidId(boardId);
+      allow list: if isOwner(userId);
+
+      allow create: if isOwner(userId) &&
+        isValidId(boardId) &&
+        incoming().keys().hasAll([
+          'userId', 'schemaVersion', 'title', 'activeMode', 'activeView',
+          'trunkRevealLevel', 'root', 'createdAt', 'updatedAt'
+        ]) &&
+        incoming().keys().hasOnly([
+          'userId', 'schemaVersion', 'title', 'activeMode', 'activeView',
+          'trunkRevealLevel', 'root', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidBranchBoard(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+        isValidId(boardId) &&
+        isValidBranchBoard(incoming(), userId) &&
+        incoming().userId == existing().userId &&
+        incoming().createdAt == existing().createdAt &&
+        (
+          // Action: Update tree, project title, or board state
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'title', 'activeMode', 'activeView', 'trunkRevealLevel', 'root', 'updatedAt', 'schemaVersion'
+          ])
+        );
+
+      allow delete: if isOwner(userId) && isValidId(boardId);
+
+      // --- State Variant Subtree Snapshots ---
+      match /snapshots/{snapshotId} {
+        allow get: if isOwner(userId) && isValidId(boardId) && isValidId(snapshotId);
+        allow list: if isOwner(userId) && isValidId(boardId);
+
+        allow create: if isOwner(userId) &&
+          isValidId(boardId) &&
+          isValidId(snapshotId) &&
+          incoming().keys().hasAll([
+            'userId', 'ownerNodeId', 'variantId', 'label', 'children', 'createdAt', 'updatedAt'
+          ]) &&
+          incoming().keys().hasOnly([
+            'userId', 'ownerNodeId', 'variantId', 'label', 'children', 'createdAt', 'updatedAt'
+          ]) &&
+          isValidVariantSnapshot(incoming(), userId) &&
+          existsAfter(/databases/$(database)/documents/users/$(userId)/boards/$(boardId));
+
+        allow update: if isOwner(userId) &&
+          isValidId(boardId) &&
+          isValidId(snapshotId) &&
+          isValidVariantSnapshot(incoming(), userId) &&
+          incoming().userId == existing().userId &&
+          incoming().ownerNodeId == existing().ownerNodeId &&
+          incoming().variantId == existing().variantId &&
+          incoming().createdAt == existing().createdAt &&
+          (
+            // Action: Update state label or subtree children
+            incoming().diff(existing()).affectedKeys().hasOnly(['label', 'children', 'updatedAt'])
+          );
+
+        allow delete: if isOwner(userId) && isValidId(boardId) && isValidId(snapshotId);
+      }
+    }
+  }
+}

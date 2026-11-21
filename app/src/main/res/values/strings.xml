@@ -1,0 +1,87 @@
+<resources>
+    <string name="app_name">Branch</string>
+
+    <!-- Auth -->
+    <string name="auth_tagline">主幹總覽 × 獨立心智圖下鑽</string>
+    <string name="auth_subtitle">極簡流暢的專案主幹規劃與聚焦執行空間，支援雲端即時同步</string>
+    <string name="auth_sign_in_google">使用 Google 帳號登入</string>
+    <string name="auth_signing_in">正在登入…</string>
+    <string name="auth_sign_out">登出帳號</string>
+    <string name="auth_config_missing">Google 登入設定遺失，請確認 Firebase 設定</string>
+
+    <!-- Project Hub -->
+    <string name="hub_title">Branch</string>
+    <string name="hub_subtitle">所有專案</string>
+    <string name="hub_new_project">新建專案</string>
+    <string name="hub_new_project_title">建立新專案</string>
+    <string name="hub_project_name_hint">輸入專案名稱…</string>
+    <string name="hub_rename_project">重新命名</string>
+    <string name="hub_delete_project">刪除專案</string>
+    <string name="hub_delete_confirm_title">刪除專案？</string>
+    <string name="hub_delete_confirm_body">刪除「%1$s」後將無法復原其中的所有階段、分支與狀態紀錄。</string>
+    <string name="hub_phase_branch_summary_fmt">%1$d 階段 · %2$d 分支</string>
+    <string name="hub_empty_title">尚無專案</string>
+    <string name="hub_empty_desc">點擊下方按鈕建立你的第一個專案主幹畫布</string>
+    <string name="hub_create">建立</string>
+    <string name="hub_save">儲存</string>
+    <string name="hub_delete">刪除</string>
+    <string name="hub_cancel">取消</string>
+    <string name="cd_back_to_hub">返回專案列表</string>
+
+    <!-- Trunk Overview & Drill-down -->
+    <string name="trunk_add_phase">新增階段</string>
+    <string name="trunk_new_phase_default">新階段</string>
+    <string name="trunk_new_branch_default">新分支</string>
+    <string name="trunk_add_branch">新增分支</string>
+    <string name="trunk_branch_nodes_fmt">%1$d 節點</string>
+    <string name="trunk_phase_index_fmt">PHASE %1$02d</string>
+    <string name="cd_back_to_trunk">返回主幹總覽</string>
+    <string name="cd_ambient_mode_toggle">切換輕鬆發想或開工執行模式</string>
+    <string name="cd_zen_enter">進入沉浸式全螢幕</string>
+    <string name="cd_zen_exit">退出沉浸式全螢幕</string>
+    <string name="cd_undo">復原上一步操作</string>
+    <string name="action_undo">復原</string>
+
+    <!-- Node Toolbar -->
+    <string name="action_color">顏色</string>
+    <string name="action_duplicate">複製</string>
+    <string name="action_more">更多</string>
+    <string name="action_states">狀態</string>
+    <string name="action_strikethrough">畫橫線</string>
+    <string name="action_un_strikethrough">取消畫橫線</string>
+    <string name="action_delete_node">刪除節點</string>
+    <string name="action_delete_phase">刪除階段</string>
+    <string name="action_add_child">新增下層節點</string>
+    <string name="action_toggle_collapse">收合或展開子分支</string>
+
+    <!-- States Management -->
+    <string name="states_sheet_title">狀態管理</string>
+    <string name="states_sheet_subtitle">不同狀態各自保存獨立子樹與專屬漸層外觀</string>
+    <string name="states_add_button">新增狀態</string>
+    <string name="states_add_first_hint">將目前結構自動存為「狀態 A」，並深層複製為「狀態 B」</string>
+    <string name="states_badge_default">預設</string>
+    <string name="states_badge_active">使用中</string>
+    <string name="states_set_default">設為預設</string>
+    <string name="states_rename">改名</string>
+    <string name="states_delete">刪除</string>
+    <string name="states_rename_title">修改狀態名稱</string>
+    <string name="variant_switch_desc">點擊翻轉切換狀態</string>
+
+    <!-- Exec Result Log & Leaf Lock -->
+    <string name="result_log_placeholder">記一行結果備註…</string>
+    <string name="result_log_add_hint">+ 記一行結果</string>
+    <string name="leaf_lock_hint">由底層葉節點自動彙整進度</string>
+
+    <!-- Node Status -->
+    <string name="status_plan">Plan</string>
+    <string name="status_do">Do</string>
+    <string name="status_done">Done</string>
+    <string name="node_new_default">新節點</string>
+
+    <!-- Sync & Errors -->
+    <string name="sync_cloud_active">雲端同步中</string>
+    <string name="error_retry">重試</string>
+    <string name="cd_account_menu">帳號選單</string>
+    <string name="cd_status_ring">切換葉節點執行狀態</string>
+    <string name="cd_rollup_ring">子節點彙整進度</string>
+</resources>
